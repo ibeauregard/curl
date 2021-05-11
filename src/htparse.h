@@ -7,8 +7,7 @@ typedef struct uri {
     char* scheme;
     char* host;
     char* port;
-    char* absolute;
-    char* relative;
+    char* resource;
     char* fragment;
 } Uri;
 

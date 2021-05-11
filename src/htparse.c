@@ -33,19 +33,11 @@ void scan (char* raw_uri, Uri* uri)
         }
         if (*p=='/' || *p=='#' || *p=='?')
             break;
-        if (*p==':') {
+        if (*p==':' && p[1] == '/' && p[2] == '/') {
             *p = 0;
             uri->scheme = after_scheme; /* Scheme has been specified */
 
-/* The combination of gcc, the "-O" flag and the HP platform is
-   unhealthy. The following three lines is a quick & dirty fix, but is
-   not recommended. Rather, turn off "-O". */
-
-/*		after_scheme = p;*/
-/*		while (*after_scheme == 0)*/
-/*		    after_scheme++;*/
-
-            after_scheme = p + 1;
+            after_scheme = p + 3;
 
             if (0==strcasecmp("URL", uri->scheme)) {
                 uri->scheme = NULL;  /* Ignore IETF's URL: pre-prefix */
@@ -54,19 +46,15 @@ void scan (char* raw_uri, Uri* uri)
     }
 
     p = after_scheme;
-    if (*p=='/'){
-        if (p[1]=='/') {
-            uri->host = p + 2;		/* host has been specified 	*/
-            *p=0;			/* Terminate access 		*/
-            p=strchr(uri->host, '/');	/* look for end of host raw_uri if any */
-            if(p) {
-                *p=0;			/* Terminate host */
-                uri->absolute = p + 1;		/* Root has been found */
-            }
-        } else {
-            uri->absolute = p + 1;		/* Root found but no host */
-        }
-    } else {
-        uri->relative = (*after_scheme) ? after_scheme : 0; /* zero for "" */
+    uri->host = p;		/* host has been specified 	*/
+    p=strchr(uri->host, '/');	/* look for end of host raw_uri if any */
+    if(p) {
+        *p=0;			/* Terminate host */
+        uri->resource = p + 1;		/* Root has been found */
+    }
+    for (p = uri->host; *p && *p != ':'; p++);
+    if (*p) {
+        *p = 0;
+        uri->port = p + 1;
     }
 }

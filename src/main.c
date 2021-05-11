@@ -1,7 +1,14 @@
-#include <stdio.h>
+#include "my_curl.h"
 
-int main(void)
+#include <stdio.h>
+#include <stdlib.h>
+
+
+int main(int argc, char* argv[])
 {
-    printf("Hello, World!\n");
-    return 0;
+    if (argc != 2) {
+        fprintf(stderr, "%s\n", "my_curl takes exactly one argument");
+        return EXIT_FAILURE;
+    }
+    return my_curl(argv[1]);
 }

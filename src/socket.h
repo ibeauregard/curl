@@ -6,10 +6,11 @@
 typedef struct socket Socket;
 struct socket {
     struct internals* _internals;
-    int (*connect)(Socket* this, struct addrinfo* addrInfo);
-    ssize_t (*read)(Socket* this, char* buffer, size_t num);
-    ssize_t (*write)(Socket* this, char* text);
-    void (*close)(Socket* this);
+    int (*getFd)();
+    int (*connect)(struct addrinfo* addrInfo);
+    ssize_t (*read)(char* buffer, size_t num);
+    ssize_t (*write)(char* text);
+    void (*close)();
 };
 
 extern const struct socket_class {

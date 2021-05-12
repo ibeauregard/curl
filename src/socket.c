@@ -14,12 +14,14 @@ static struct internals {
     int fd;
 } internals;
 
-static int connect_(Socket* this, struct addrinfo* addr_info);
-static ssize_t read_(Socket* this, char* buffer, size_t num);
-static ssize_t write_(Socket* this, char* text);
-static void close_(Socket* this);
+static int get_fd();
+static int connect_(struct addrinfo* addr_info);
+static ssize_t read_(char* buffer, size_t num);
+static ssize_t write_(char* text);
+static void close_();
 static Socket socket_ = {
         ._internals = &internals,
+        .getFd = &get_fd,
         .connect = &connect_,
         .read = &read_,
         .write = &write_,
@@ -34,24 +36,28 @@ Socket* from_addr_info(struct addrinfo* addrInfo)
     return &socket_;
 }
 
-int connect_(Socket* this, struct addrinfo* addr_info)
+int get_fd()
 {
-    return connect(this->_internals->fd, addr_info->ai_addr, addr_info->ai_addrlen);
+    return internals.fd;
 }
 
-ssize_t read_(Socket* this, char* buffer, size_t num)
+int connect_(struct addrinfo* addr_info)
 {
-    return read(this->_internals->fd, buffer, num);
+    return connect(internals.fd, addr_info->ai_addr, addr_info->ai_addrlen);
 }
 
-ssize_t write_(Socket* this, char* text)
+ssize_t read_(char* buffer, size_t num)
 {
-    return write(this->_internals->fd, text, strlen(text));
+    return read(internals.fd, buffer, num);
 }
 
-void close_(Socket* this)
+ssize_t write_(char* text)
 {
-    (void) this;
+    return write(internals.fd, text, strlen(text));
+}
+
+void close_()
+{
     if (close(socket_._internals->fd) == -1)
         fprintf(stderr, "my_curl: error when closing socket: %s\n", strerror(errno));
 }

@@ -3,16 +3,8 @@
 
 #include "htparse.h"
 
-typedef struct http_exchange HttpExchange;
-struct http_exchange {
-    struct internals* _internals;
-    void (*send)(HttpExchange* this);
-    void (*printResponse)(HttpExchange* this);
-    void (*close)(HttpExchange* this);
-};
-
-extern const struct http_exchange_class {
-    HttpExchange* (*fromUri)(Uri* uri);
-} HttpExchangeClass;
+extern const struct http_exchange {
+    void (*withUri)(Uri* uri);
+} HttpExchange;
 
 #endif

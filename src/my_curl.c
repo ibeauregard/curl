@@ -12,10 +12,7 @@ int my_curl(char* raw_uri)
 {
     Uri uri;
     if (!parse_uri(raw_uri, &uri)) return EXIT_FAILURE;
-    HttpExchange* exchange = HttpExchangeClass.fromUri(&uri);
-    exchange->send(exchange);
-    exchange->printResponse(exchange);
-    exchange->close(exchange);
+    HttpExchange.withUri(&uri);
     return EXIT_SUCCESS;
 }
 

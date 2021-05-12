@@ -1,6 +1,5 @@
 #include "socket.h"
 
-#include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
@@ -11,26 +10,28 @@ const struct socket_class SocketClass = {
         .fromAddrInfo = &from_addr_info
 };
 
-struct internals {
+static struct internals {
     int fd;
-};
+} internals;
 
 static int connect_(Socket* this, struct addrinfo* addr_info);
 static ssize_t read_(Socket* this, char* buffer, size_t num);
 static ssize_t write_(Socket* this, char* text);
-static void delete(Socket** this);
+static void close_(Socket* this);
+static Socket socket_ = {
+        ._internals = &internals,
+        .connect = &connect_,
+        .read = &read_,
+        .write = &write_,
+        .close = &close_
+};
+
 Socket* from_addr_info(struct addrinfo* addrInfo)
 {
     int socket_fd = socket(addrInfo->ai_family, addrInfo->ai_socktype, addrInfo->ai_protocol);
     if (socket_fd == -1) return NULL;
-    Socket* this = malloc(sizeof (Socket));
-    this->_internals = malloc(sizeof (struct internals));
-    this->_internals->fd = socket_fd;
-    this->connect = &connect_;
-    this->read = &read_;
-    this->write = &write_;
-    this->delete = &delete;
-    return this;
+    socket_._internals->fd = socket_fd;
+    return &socket_;
 }
 
 int connect_(Socket* this, struct addrinfo* addr_info)
@@ -48,10 +49,9 @@ ssize_t write_(Socket* this, char* text)
     return write(this->_internals->fd, text, strlen(text));
 }
 
-void delete(Socket** this)
+void close_(Socket* this)
 {
-    if (close((*this)->_internals->fd) == -1)
+    (void) this;
+    if (close(socket_._internals->fd) == -1)
         fprintf(stderr, "my_curl: error when closing socket: %s\n", strerror(errno));
-    free((*this)->_internals);
-    free(*this); *this = NULL;
 }

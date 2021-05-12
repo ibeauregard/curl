@@ -9,7 +9,7 @@ struct socket {
     int (*connect)(Socket* this, struct addrinfo* addrInfo);
     ssize_t (*read)(Socket* this, char* buffer, size_t num);
     ssize_t (*write)(Socket* this, char* text);
-    void (*delete)(Socket** this);
+    void (*close)(Socket* this);
 };
 
 extern const struct socket_class {

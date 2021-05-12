@@ -1,7 +1,7 @@
 #include "http_exchange.h"
 #include "socket.h"
+#include "buffered_socket_printer.h"
 
-#include <stdlib.h>
 #include <stdbool.h>
 #include <netdb.h>
 #include <stdio.h>
@@ -9,38 +9,35 @@
 #include <errno.h>
 #include <unistd.h>
 
-static HttpExchange from_uri(Uri* uri);
+static HttpExchange* from_uri(Uri* uri);
 const struct http_exchange_class HttpExchangeClass = {
         .fromUri = &from_uri
 };
 
-struct internals {
+static struct internals {
     Socket* socket;
     Uri* uri;
     bool failed;
+} internals = {
+        .socket = NULL,
+        .uri = NULL,
+        .failed = false
 };
 
-static struct internals* new_internals(Uri* uri);
 static void send_(HttpExchange* this);
 static void print_response(HttpExchange* this);
-static void delete(HttpExchange* this);
-HttpExchange from_uri(Uri* uri)
-{
-    return (HttpExchange) {
-        ._internals = new_internals(uri),
+static void close_(HttpExchange* this);
+static HttpExchange exchange = {
+        ._internals = &internals,
         .send = &send_,
         .printResponse = &print_response,
-        .delete = &delete
-    };
-}
+        .close = &close_
+};
 
-struct internals* new_internals(Uri* uri)
+HttpExchange* from_uri(Uri* uri)
 {
-    struct internals* internals = malloc(sizeof (struct internals));
-    internals->socket = NULL;
-    internals->uri = uri;
-    internals->failed = false;
-    return internals;
+    exchange._internals->uri = uri;
+    return &exchange;
 }
 
 static void create_connected_socket(HttpExchange* this);
@@ -88,7 +85,7 @@ void create_connected_socket(HttpExchange* this)
     int getaddrinfo_return_value;
     Uri* uri = this->_internals->uri;
     if ((getaddrinfo_return_value = getaddrinfo(uri->host, uri->port ? uri->port : "80", &hints, &addr_info)) != 0) {
-        fprintf(stderr, "my_curl: error from getaddrinfo: %s\n", gai_strerror(getaddrinfo_return_value));
+        fprintf(stderr, "my_curl: %s\n", gai_strerror(getaddrinfo_return_value));
         this->_internals->failed = true;
         return;
     }
@@ -129,14 +126,13 @@ void attempt_connection(HttpExchange* this, struct addrinfo* addr_list)
             this->_internals->socket = socket;
             break;
         }
-        socket->delete(&socket);
+        socket->close(socket);
     }
     freeaddrinfo(addr_list);
 }
 
-void delete(HttpExchange* this)
+void close_(HttpExchange* this)
 {
-    struct internals* internals = this->_internals;
-    internals->socket->delete(&internals->socket);
-    free(internals);
+    (void) this;
+    if (internals.socket) internals.socket->close(internals.socket);
 }

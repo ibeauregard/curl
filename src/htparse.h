@@ -13,4 +13,4 @@ typedef struct uri {
 
 void scan (char* raw_uri, Uri* uri);
 
-#endif //MY_CURL_HTPARSE_H
+#endif

@@ -3,4 +3,4 @@
 
 int my_curl(char* raw_uri);
 
-#endif //MY_CURL_MY_CURL_H
+#endif

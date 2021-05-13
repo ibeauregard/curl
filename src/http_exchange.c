@@ -7,17 +7,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <stdlib.h>
-
-#define CONTENT_LENGTH_LABEL "content-length:"
 
 static void make_exchange(Uri* uri);
 const struct http_exchange HttpExchange = {
         .withUri = &make_exchange
 };
 
-static void send_request();
-static void print_response();
 static void close_();
 static struct exchange {
     Socket* socket;
@@ -29,6 +24,8 @@ static struct exchange {
         .failed = false
 };
 
+static void send_request();
+static void print_response();
 void make_exchange(Uri* uri)
 {
     exchange.uri = uri;
@@ -45,12 +42,10 @@ void send_request()
     if (!exchange.failed) write_to_socket();
 }
 
-static size_t get_content_length(BufferedResponsePrinter* printer);
 void print_response()
 {
     BufferedResponsePrinter* printer = BufferedResponsePrinterClass.fromSocket(exchange.socket);
-    size_t content_length = get_content_length(printer);
-    if (!exchange.failed) printer->print(content_length);
+    printer->print();
 }
 
 static void attempt_connection(struct addrinfo* addr_list);
@@ -110,39 +105,6 @@ void attempt_connection(struct addrinfo* addr_list)
         socket->close(socket);
     }
     freeaddrinfo(addr_list);
-}
-
-static size_t parse_headers_for_content_length(char* headers);
-size_t get_content_length(BufferedResponsePrinter* printer)
-{
-    char* headers = NULL;
-    while (!headers && !printer->isFull()) {
-        printer->load(printer);
-        headers = printer->getHeaders();
-    }
-    if (!headers) {
-        fprintf(stderr, "%s\n", "my_curl: Can't parse headers; too large");
-        exchange.failed = true;
-    }
-    return parse_headers_for_content_length(headers);
-}
-
-size_t parse_headers_for_content_length(char* headers)
-{
-    static size_t label_length = strlen(CONTENT_LENGTH_LABEL);
-    size_t content_length_index, header_length = strlen(headers);
-    for (content_length_index = label_length; content_length_index < header_length; content_length_index++) {
-        if (!strncasecmp(&headers[content_length_index - label_length], CONTENT_LENGTH_LABEL, label_length)) {
-            break;
-        }
-    }
-    if (content_length_index == header_length) {
-        fprintf(stderr, "%s\n", "my_curl doesn't support chunked encoding; headers have to specify content length");
-        exchange.failed = true;
-    }
-    long content_length = strtol(&headers[content_length_index], NULL, 10);
-    free(headers);
-    return content_length;
 }
 
 void close_()

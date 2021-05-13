@@ -5,7 +5,6 @@
 
 typedef struct socket Socket;
 struct socket {
-    struct internals* _internals;
     int (*getFd)();
     int (*connect)(struct addrinfo* addrInfo);
     ssize_t (*read)(char* buffer, size_t num);

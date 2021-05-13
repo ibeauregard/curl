@@ -6,10 +6,8 @@
 
 typedef struct buffered_response_printer BufferedResponsePrinter;
 struct buffered_response_printer {
-    struct internals* _internals;
-    size_t (*load)();
-    size_t (*unload)();
-    bool (*isEmpty)();
+    void (*print)(size_t num);
+    void (*load)();
     bool (*isFull)();
     char* (*getHeaders)();
 };

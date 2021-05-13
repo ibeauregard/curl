@@ -33,7 +33,7 @@ void make_exchange(Uri* uri)
 {
     exchange.uri = uri;
     send_request();
-    print_response();
+    if (!exchange.failed) print_response();
     close_();
 }
 
@@ -45,18 +45,12 @@ void send_request()
     if (!exchange.failed) write_to_socket();
 }
 
-static void print_response_();
+static size_t get_content_length(BufferedResponsePrinter* printer);
 void print_response()
 {
-    if (!exchange.failed) print_response_();
-}
-
-static size_t get_content_length(BufferedResponsePrinter* printer);
-void print_response_()
-{
     BufferedResponsePrinter* printer = BufferedResponsePrinterClass.fromSocket(exchange.socket);
-    printf("%zu\n", get_content_length(printer));
-    if (exchange.failed) return;
+    size_t content_length = get_content_length(printer);
+    if (!exchange.failed) printer->print(content_length);
 }
 
 static void attempt_connection(struct addrinfo* addr_list);
@@ -94,7 +88,7 @@ void write_to_socket()
         fprintf(stderr, "%s\n", "my_curl: encoding error in snprintf");
         exchange.failed = true;
     } else if (num_printed == BUFSIZ) {
-        fprintf(stderr, "%s\n", "my_curl: cannot withUri a get request: URI too long");
+        fprintf(stderr, "%s\n", "my_curl: cannot send a get request: URI too long");
         exchange.failed = true;
     }
     Socket* socket = exchange.socket;
@@ -126,7 +120,7 @@ size_t get_content_length(BufferedResponsePrinter* printer)
         printer->load(printer);
         headers = printer->getHeaders();
     }
-    if (!headers && printer->isFull()) {
+    if (!headers) {
         fprintf(stderr, "%s\n", "my_curl: Can't parse headers; too large");
         exchange.failed = true;
     }

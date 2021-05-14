@@ -18,8 +18,8 @@ static Headers headers = {
 
 Headers* from_raw_string(char* raw_headers)
 {
-    static size_t content_length_len = strlen(CONTENT_LENGTH_LABEL),
-                chunked_encoding_len = strlen(CHUNKED_ENCODING_LABEL);
+    static size_t content_length_len = 15, // strlen(CONTENT_LENGTH_LABEL)
+                chunked_encoding_len = 18; // strlen(CHUNKED_ENCODING_LABEL);
     size_t header_len = strlen(raw_headers);
     for (size_t i = min(content_length_len, chunked_encoding_len); i < header_len; i++) {
         if (i >= content_length_len && !strncasecmp(&raw_headers[i - content_length_len],

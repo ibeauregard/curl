@@ -76,9 +76,9 @@ void write_to_socket()
     char request_text[BUFSIZ];
     Uri* uri = exchange.uri;
     int num_printed = snprintf(request_text, BUFSIZ,
-                               "GET %s HTTP/1.1\r\n"
+                               "GET /%s HTTP/1.1\r\n"
                                "Host: %s\r\n\r\n",
-                               uri->resource && strlen(uri->resource) ? uri->resource : "/", uri->host);
+                               uri->resource ? uri->resource : "", uri->host);
     if (num_printed == -1) {
         fprintf(stderr, "%s\n", "my_curl: encoding error in snprintf");
         exchange.failed = true;

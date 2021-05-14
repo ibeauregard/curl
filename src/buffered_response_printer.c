@@ -93,9 +93,9 @@ size_t load()
     size_t free_capacity = printer.capacity - printer.length;
     size_t insert_index = (printer.index + printer.length) % printer.capacity;
     size_t read_potential = min(free_capacity, printer.capacity - insert_index);
-    size_t read_count = read(printer.socket->getFd(), &printer.buffer[insert_index], read_potential);
+    size_t read_count = printer.socket->read(&printer.buffer[insert_index], read_potential);
     if (read_count == read_potential && read_potential < free_capacity) {
-        read_count += read(printer.socket->getFd(), printer.buffer, free_capacity - read_potential);
+        read_count += printer.socket->read(printer.buffer, free_capacity - read_potential);
     }
     printer.length += read_count;
     return read_count;

@@ -14,11 +14,11 @@ static struct internals {
     int fd;
 } socket_;
 
-static int get_fd();
+static int get_fd(void);
 static int connect_(struct addrinfo* addr_info);
 static ssize_t read_(char* buffer, size_t num);
 static ssize_t write_(char* text);
-static void close_();
+static void close_(void);
 static Socket socket_interface = {
         .getFd = &get_fd,
         .connect = &connect_,
@@ -35,7 +35,7 @@ Socket* from_addr_info(struct addrinfo* addrInfo)
     return &socket_interface;
 }
 
-int get_fd()
+int get_fd(void)
 {
     return socket_.fd;
 }
@@ -55,7 +55,7 @@ ssize_t write_(char* text)
     return write(socket_.fd, text, strlen(text));
 }
 
-void close_()
+void close_(void)
 {
     if (close(socket_.fd) == -1)
         fprintf(stderr, "my_curl: error when closing socket: %s\n", strerror(errno));

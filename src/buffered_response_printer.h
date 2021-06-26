@@ -6,7 +6,7 @@
 
 typedef struct buffered_response_printer BufferedResponsePrinter;
 struct buffered_response_printer {
-    void (*print)();
+    void (*print)(void);
 };
 
 extern const struct buffered_response_printer_class {

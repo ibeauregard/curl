@@ -27,7 +27,7 @@ static struct internals {
         .capacity = CAPACITY
 };
 
-static void print();
+static void print(void);
 static BufferedResponsePrinter printer_interface = {
         .print = &print
 };
@@ -38,12 +38,12 @@ BufferedResponsePrinter* from_socket(Socket* socket)
     return &printer_interface;
 }
 
-static bool is_full();
-static size_t load();
-static char* get_raw_headers();
-static void print_chunked_transfer();
+static bool is_full(void);
+static size_t load(void);
+static char* get_raw_headers(void);
+static void print_chunked_transfer(void);
 static void print_chunk(size_t chunk_size);
-void print()
+void print(void)
 {
     char* raw_headers = NULL;
     while (!raw_headers && !is_full()) {
@@ -62,13 +62,13 @@ void print()
     }
 }
 
-void print_chunked_transfer()
+void print_chunked_transfer(void)
 {
     fprintf(stderr, "%s\n", "my_curl: Transfer-Encoding header not yet supported; Content-Length must be specified");
 }
 
-static bool is_empty();
-static size_t unload();
+static bool is_empty(void);
+static size_t unload(void);
 void print_chunk(size_t chunk_size)
 {
     size_t write_count = 0, read_count = printer.length;
@@ -88,7 +88,7 @@ void print_chunk(size_t chunk_size)
     }
 }
 
-size_t load()
+size_t load(void)
 {
     size_t free_capacity = printer.capacity - printer.length;
     size_t insert_index = (printer.index + printer.length) % printer.capacity;
@@ -101,7 +101,7 @@ size_t load()
     return read_count;
 }
 
-size_t unload()
+size_t unload(void)
 {
     size_t print_potential = printer.index + printer.length <= printer.capacity ?
                              printer.length : printer.capacity - printer.index;
@@ -114,7 +114,7 @@ size_t unload()
     return print_count;
 }
 
-char* get_raw_headers()
+char* get_raw_headers(void)
 {
     static size_t body_index = 4; // length of "\r\n\r\n"
     for (; body_index <= printer.length; body_index++) {
@@ -128,12 +128,12 @@ char* get_raw_headers()
     return strndup(printer.buffer, body_index);
 }
 
-bool is_empty()
+bool is_empty(void)
 {
     return printer.length == 0;
 }
 
-bool is_full()
+bool is_full(void)
 {
     return printer.length == printer.capacity;
 }

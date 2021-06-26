@@ -13,7 +13,7 @@ const struct http_exchange HttpExchange = {
         .withUri = &make_exchange
 };
 
-static void close_();
+static void close_(void);
 static struct exchange {
     Socket* socket;
     Uri* uri;
@@ -24,8 +24,8 @@ static struct exchange {
         .failed = false
 };
 
-static void send_request();
-static void print_response();
+static void send_request(void);
+static void print_response(void);
 void make_exchange(Uri* uri)
 {
     exchange.uri = uri;
@@ -34,22 +34,22 @@ void make_exchange(Uri* uri)
     close_();
 }
 
-static void create_connected_socket();
-static void write_to_socket();
-void send_request()
+static void create_connected_socket(void);
+static void write_to_socket(void);
+void send_request(void)
 {
     create_connected_socket();
     if (!exchange.failed) write_to_socket();
 }
 
-void print_response()
+void print_response(void)
 {
     BufferedResponsePrinter* printer = BufferedResponsePrinterClass.fromSocket(exchange.socket);
     printer->print();
 }
 
 static void attempt_connection(struct addrinfo* addr_list);
-void create_connected_socket()
+void create_connected_socket(void)
 {
     static const struct addrinfo hints = {
             .ai_family = AF_UNSPEC,
@@ -71,7 +71,7 @@ void create_connected_socket()
     }
 }
 
-void write_to_socket()
+void write_to_socket(void)
 {
     char request_text[BUFSIZ];
     Uri* uri = exchange.uri;
@@ -102,12 +102,12 @@ void attempt_connection(struct addrinfo* addr_list)
             exchange.socket = socket;
             break;
         }
-        socket->close(socket);
+        socket->close();
     }
     freeaddrinfo(addr_list);
 }
 
-void close_()
+void close_(void)
 {
-    if (exchange.socket) exchange.socket->close(exchange.socket);
+    if (exchange.socket) exchange.socket->close();
 }
